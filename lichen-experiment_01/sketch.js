@@ -30,7 +30,8 @@ function setup() {
   for (let el of dots2) {
     const intSubDotArr = makeSubDots(el.x, el.y, 5, 10)
     dots3.push(...intSubDotArr);
-  } 
+  }
+  dots3.forEach(el => el.size = random(4, 10)) 
   
   dots4 = makeDots(50, 30);
   dots4.forEach(el => el.size = random(1, 8))
@@ -45,13 +46,13 @@ function setup() {
     const intSubDotArr = makeSubDots(el.x, el.y, 10, 15)
     dots7.push(...intSubDotArr);
   }
+  
 
   dots8 = makeDots(300, 140);
   dots8.forEach(el => el.size = random(1, 5))
 
   dots9 = makeDots(200, 10);
   dots9.forEach(el => el.size = random(1, 9))
-
 }
 
 function draw() {
@@ -79,7 +80,7 @@ function draw() {
     strokeWeight(1);
     fill(196, 152, 39)
     stroke(133, 91, 19)
-    circle(dots3[i].x, dots3[i].y, 8);
+    circle(dots3[i].x, dots3[i].y, dots3[i].size);
   }
 
   // draw dots6 and dots7
