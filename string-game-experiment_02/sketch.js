@@ -9,32 +9,40 @@ maxR = 200;
 function setup() {
   createCanvas(windowWidth, windowHeight);
   makeDots(25);
+  frameRate(5);
+
 }
 
 function draw() {
-  background(20);
+  background(30, 30, 30);
   for (var i = 0; i < dots.length - 2; i++){
+    const connectionsForPointArr = [];
+    const amountOfConnectionsForPoint = Math.floor(random(1, dots.length / 8));
+    for (let j = 0; j <= amountOfConnectionsForPoint; j++) {
+      connectionsForPointArr.push(dots[Math.floor(random(0, dots.length))])
+    }
+
+    strokeWeight(1);
+    for (let j = 0; j < connectionsForPointArr.length; j++) {
+      strokeWeight(1);
+      j % 2 === 0 ? stroke(224, 0, 52) : stroke(0, 81, 222);
+      line(dots[i].x, dots[i].y, connectionsForPointArr[j].x, connectionsForPointArr[j].y);
+      point(dots[i].x, dots[i].y);
+      strokeWeight(5);
+    }
+
     strokeWeight(5);
     point(dots[i].x, dots[i].y);
-    
-    strokeWeight(1);
-    stroke(224, 0, 52)
-    line(dots[i].x, dots[i].y, dots[i + 1].x, dots[i + 1].y);
-    stroke(0, 81, 222)
-    line(dots[i].x, dots[i].y, dots[i + 2].x, dots[i + 2].y);
   }
-  line(dots[0].x, dots[0].y, dots[dots.length - 1].x, dots[dots.length - 1].y);
-  strokeWeight(1);
-  noFill();
 }
 
 function makeDots(n){
   for (var i = 0; i < n; i++){
     const a = random(0, 2*PI);
     const r = 20 * sqrt(random(0, maxR));
-    const x = width / 2 + r * cos(a);
-    const y = height / 2 + r * sin(a);
-    const newDot = createVector(x, y);
+    const x = Math.floor(width / 2 + r * cos(a));
+    const y = Math.floor(height / 2 + r * sin(a));
+    const newDot = {x, y};
     dots.push(newDot);
   }
 
