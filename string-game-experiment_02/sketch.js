@@ -24,32 +24,9 @@ function draw() {
     const connectionsForPointArr = [];
     const amountOfConnectionsForPoint = Math.floor(random(1, dots.length / 10));
     
-    const pointCanMovePlusX = dots[i].x < width - 10; 
-    const pointCanMovePlusY = dots[i].y < height - 10; 
-    const pointCanMoveMinusX = dots[i].y > 10; 
-    const pointCanMoveMinusY = dots[i].y > 10; 
-    const shouldAddX = Math.random() > 0.5
-    const shouldAddY = Math.random() > 0.5
-
-    const pointPositionShift = {
-      xShift: 0,
-      yShift: 0
-    }
-
-    if (shouldAddX) {
-      pointCanMovePlusX ? pointPositionShift.xShift = random(0, 10) : pointPositionShift.xShift = 0;
-    } else {
-      pointCanMoveMinusX ? pointPositionShift.xShift = random(0, 10) * -1 : pointPositionShift.xShift = 0;
-    }
-
-    if (shouldAddY) {
-      pointCanMovePlusY ? pointPositionShift.yShift = random(0, 10) : pointPositionShift.yShift = 0;
-    } else {
-      pointCanMoveMinusY ? pointPositionShift.yShift = random(0, 10) * -1 : pointPositionShift.yShift = 0;
-    }
-
-    dots[i].x += pointPositionShift.xShift;
-    dots[i].y += pointPositionShift.yShift;
+    const pointPositionShiftObj = getPointPositionShiftObj(dots[i])
+    dots[i].x += pointPositionShiftObj.xShift;
+    dots[i].y += pointPositionShiftObj.yShift;
 
     for (let j = 0; j <= amountOfConnectionsForPoint; j++) {
       connectionsForPointArr.push(dots[Math.floor(random(0, dots.length))])
@@ -78,5 +55,32 @@ function makeDots(n){
     const newDot = {x, y};
     dots.push(newDot);
   }
+}
 
+function getPointPositionShiftObj (currDot) {
+  const pointCanMovePlusX = currDot.x < width - 10; 
+  const pointCanMovePlusY = currDot.y < height - 10; 
+  const pointCanMoveMinusX = currDot.y > 10; 
+  const pointCanMoveMinusY = currDot.y > 10; 
+  const shouldAddX = Math.random() > 0.5
+  const shouldAddY = Math.random() > 0.5
+
+  const pointPositionShift = {
+    xShift: 0,
+    yShift: 0
+  }
+
+  if (shouldAddX) {
+    pointCanMovePlusX ? pointPositionShift.xShift = random(0, 10) : pointPositionShift.xShift = 0;
+  } else {
+    pointCanMoveMinusX ? pointPositionShift.xShift = random(0, 10) * -1 : pointPositionShift.xShift = 0;
+  }
+
+  if (shouldAddY) {
+    pointCanMovePlusY ? pointPositionShift.yShift = random(0, 10) : pointPositionShift.yShift = 0;
+  } else {
+    pointCanMoveMinusY ? pointPositionShift.yShift = random(0, 10) * -1 : pointPositionShift.yShift = 0;
+  }
+
+  return pointPositionShift;
 }
