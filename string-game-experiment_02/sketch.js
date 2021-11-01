@@ -9,15 +9,48 @@ maxR = 200;
 function setup() {
   createCanvas(windowWidth, windowHeight);
   makeDots(25);
-  frameRate(5);
-
+  background(40, 40, 40);
+  frameRate(30);
+  stroke(5);
+  for (let dot of dots) {
+    point(dot.x, dot.y);
+  }
 }
 
 function draw() {
-  background(30, 30, 30);
-  for (var i = 0; i < dots.length - 2; i++){
+  background('rgba(40, 40, 40, 0.25)');
+
+  for (var i = 0; i < dots.length; i++){
     const connectionsForPointArr = [];
-    const amountOfConnectionsForPoint = Math.floor(random(1, dots.length / 8));
+    const amountOfConnectionsForPoint = Math.floor(random(1, dots.length / 10));
+    
+    const pointCanMovePlusX = dots[i].x < width - 10; 
+    const pointCanMovePlusY = dots[i].y < height - 10; 
+    const pointCanMoveMinusX = dots[i].y > 10; 
+    const pointCanMoveMinusY = dots[i].y > 10; 
+    const shouldAddX = Math.random() > 0.5
+    const shouldAddY = Math.random() > 0.5
+
+    const pointPositionShift = {
+      xShift: 0,
+      yShift: 0
+    }
+
+    if (shouldAddX) {
+      pointCanMovePlusX ? pointPositionShift.xShift = random(0, 10) : pointPositionShift.xShift = 0;
+    } else {
+      pointCanMoveMinusX ? pointPositionShift.xShift = random(0, 10) * -1 : pointPositionShift.xShift = 0;
+    }
+
+    if (shouldAddY) {
+      pointCanMovePlusY ? pointPositionShift.yShift = random(0, 10) : pointPositionShift.yShift = 0;
+    } else {
+      pointCanMoveMinusY ? pointPositionShift.yShift = random(0, 10) * -1 : pointPositionShift.yShift = 0;
+    }
+
+    dots[i].x += pointPositionShift.xShift;
+    dots[i].y += pointPositionShift.yShift;
+
     for (let j = 0; j <= amountOfConnectionsForPoint; j++) {
       connectionsForPointArr.push(dots[Math.floor(random(0, dots.length))])
     }
