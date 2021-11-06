@@ -1,28 +1,17 @@
-/* const ballCount = 100;
-let x = [];
-let y = [];
-let size = [];
-let xSpeed = [];
-let ySpeed = [];
-let traveledDist = [];
-let r = [];
-let g = [];
-let b = []; */
-
-maxDistDecrementor = 300
-
+globalMaxDistDecrementor = 300
 
 class Cell {
-  constructor(x, y, size, xSpeed, ySpeed, traveledDist, r, g, b) {
+  constructor(x, y, size, xSpeed, ySpeed, traveledDist, maxDist, h, s, l) {
     this.x = x;
     this.y = y;
     this.size = size;
     this.xSpeed = xSpeed;
     this.ySpeed = ySpeed;
     this.traveledDist = traveledDist;
-    this.r = r;
-    this.g = g;
-    this.b = b;
+    this.maxDist = maxDist;
+    this.h = h;
+    this.s = s;
+    this.l = l;
   }
 }
 
@@ -30,34 +19,32 @@ const cells = [];
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  colorMode('HSL', 100);
 
-  // generateCells(100, 3, 30);
+  for (let i = 10; i > 0; i--) {
+    const amount = random(i * 10, i * 20);
+    const minSize = random(i, i * 2);
+    const maxSize = random(i * 2, i * 5);
+    cells.push(generateCellGeneration(amount, minSize, maxSize));
+  }
   console.log(cells)
 }
 
 function draw() {
-  background(0, 50);
-  
-  for (let i = 10; i > 0; i--) {
-    /* const amount = random(i * 10, i * 20);
-    const minSize = random(i, i * 2);
-    const maxSize = random(i * 2, i * 5);
-    generateAndMoveCellPulse(amount, minSize, maxSize) */
-    generateAndMoveCellPulse(100, 2, 8);
-  }
-  noLoop();
+  background(100)
+  for (let i = 0; i < cells.length; i++) {
+    moveCells(cells[i]);
+  }  
 }
 
 
-function generateAndMoveCellPulse(amount, minSize, maxSize) {
-  maxDistDecrementor -= 30;
-  const pulseGeneration = generateCells(amount, minSize, maxSize);
-  for (let i = 0; i < pulseGeneration.length; i++) {
-    moveCells(pulseGeneration, maxDistDecrementor);
-  }
+function generateCellGeneration(amount, minSize, maxSize) {
+  const pulseGeneration = generateCells(amount, minSize, maxSize, globalMaxDistDecrementor);
+  globalMaxDistDecrementor -= 30;
+  return pulseGeneration
 }
 
-function moveCells(cellArr, maxDist) {
+function moveCells(cellArr) {
   for(let i = 0; i < cellArr.length; i++){
     /* console.log(cells[i].x) */
     let oldX = cellArr[i].x;
@@ -68,18 +55,18 @@ function moveCells(cellArr, maxDist) {
 
     cellArr[i].traveledDist += dist(oldX, oldY, cellArr[i].x, cellArr[i].y);
  
-    if (cellArr[i].traveledDist > maxDist){
+    if (cellArr[i].traveledDist > cellArr[i].maxDist){
       cellArr[i].xSpeed = 0;
       cellArr[i].ySpeed = 0;
     }
 
-    fill(cellArr[i].r, cellArr[i].g, cellArr[i].b)
+    fill(cellArr[i].h, cellArr[i].s, cellArr[i].l)
     noStroke()
     ellipse(cellArr[i].x, cellArr[i].y, cellArr[i].size, cellArr[i].size);
   }
 }
 
-function generateCells(amount, minSize, maxSize) {
+function generateCells(amount, minSize, maxSize, maxDist) {
   const internalGenArray = []
   for(let i = 0; i < amount; i++) {
 
@@ -92,11 +79,11 @@ function generateCells(amount, minSize, maxSize) {
     const traveledDist = 0;
     const size = random(minSize, maxSize);
 
-    const r = random(0, 256);
-    const g = random(0, 256);
-    const b = random(0, 256);
+    const h = 40;
+    const s = random(30, 90);
+    const l = 40;
 
-    internalGenArray.push(new Cell(x, y, size, xSpeed, ySpeed, traveledDist, r, g, b))
+    internalGenArray.push(new Cell(x, y, size, xSpeed, ySpeed, traveledDist, maxDist, h, s, l))
   }
   return internalGenArray;
 }
