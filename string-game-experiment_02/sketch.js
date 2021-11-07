@@ -10,7 +10,7 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   makeDots(25);
   background(40, 40, 40);
-  frameRate(30);
+  frameRate(5);
   stroke(5);
   for (let dot of dots) {
     point(dot.x, dot.y);
