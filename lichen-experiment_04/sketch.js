@@ -1,9 +1,9 @@
-let globalMaxDistDecrementor = 300
 let canvasCenter = {
   x: 0,
   y: 0
 }
-let counter;
+
+maxAge = 300
 
 class Cell {
   constructor(x, y, size, xSpeed, ySpeed, traveledDist, maxDist, hsl) {
@@ -22,72 +22,43 @@ class Cell {
   }
 }
 
-const cells = [];
+let cells = [];
+let subCells = [];
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   canvasCenter.x = width / 2;
   canvasCenter.y = height /2;
-  // colorMode('HSL');
-
-  for (let i = 10; i > 0; i--) {
-    const amount = random(i * 10, i * 20);
-    const minSize = random(i, i * 2);
-    const maxSize = random(i * 2, i * 5);
-    cells.push(generateCellGeneration(amount, minSize, maxSize, canvasCenter));
-    
-  }
-  console.log(cells)
+  frameRate(30);
 }
 
 function draw() {
-  console.log(cells.length)
-  
   background(60)
-  for (let i = 0; i < cells.length; i++) {
-    moveCells(cells[i]);
-    // cells[i].forEach(cell => cell.incrementAge())
+
+  if (frameCount % 30 === 0) {
+    console.log('cells length: ', cells.length)
+    console.log('subCells length: ', subCells.length)
   }
 
-  if (frameCount % 60 === 0) {
-    cells.pop();
-    counter < 10 ? counter++ : counter = 0
-    dynamicMaxDistDecrementor = counter * 30;
-    globalMaxDistDecrementor = dynamicMaxDistDecrementor; // Super ugly implementation. Needs attention later.
-    const amount = random(50, 100);
-    const minSize = random(2, 10);
-    const maxSize = random(20, 30);
-    cells.push(generateCellGeneration(amount, minSize, maxSize, canvasCenter));
+  let currGenCount = round(random(2, 10))
+  let minSize = round(random(2, 5))
+  let maxSize = round(random(6, 15))
+  let maxDist = round(random(10, 300))
+  generateCells(currGenCount, minSize, maxSize, canvasCenter, maxDist, cells);
+
+  moveCells(cells);
+  ageCells(cells);
+  multiplyCells(cells)
+  killCells(cells);
+  if (subCells.length > 0) {
+    moveCells(subCells);
+    ageCells(subCells);
+    killCells(subCells);
   }
-
-  // cells = cells.filter(gen => gen[0].age < 600)
-
-  /* if(frameCount % 2 === 0) {
-    for (let j = 0; j < 2; j++) {
-      for (let element of cells[j]) {
-        const currCenter = {
-          x: element.x,
-          y: element.y
-        }
-        globalMaxDistDecrementor = 50
-        cells.push(generateCellGeneration(5, 2, 20, currCenter));
-        
-      };
-      cells.shift();
-    }
-    console.log(cells.length)
-  }   */
-
 }
 
-function generateCellGeneration(amount, minSize, maxSize, center) {
-  const pulseGeneration = generateCells(amount, minSize, maxSize, center, globalMaxDistDecrementor);
-  globalMaxDistDecrementor -= 30;
-  return pulseGeneration
-}
-
-function moveCells(cellArr) {
-  for(let cell of cellArr){
+function moveCells(targetCellArr) {
+  for(let cell of targetCellArr){
     let oldX = cell.x;
     let oldY = cell.y;
 
@@ -108,8 +79,7 @@ function moveCells(cellArr) {
   }
 }
 
-function generateCells(amount, minSize, maxSize, center, maxDist) {
-  const internalGenArray = []
+function generateCells(amount, minSize, maxSize, center, maxDist, targetCellArr) {
   for(let i = 0; i < amount; i++) {
 
     const x = center.x // width / 2; 
@@ -123,9 +93,37 @@ function generateCells(amount, minSize, maxSize, center, maxDist) {
 
     const hsl = {h: 40, s: random(30, 90), l: 40};
 
-    internalGenArray.push(new Cell(x, y, size, xSpeed, ySpeed, traveledDist, maxDist, hsl))
+    targetCellArr.push(new Cell(x, y, size, xSpeed, ySpeed, traveledDist, maxDist, hsl))
   }
-  return internalGenArray;
+}
+
+function killCells(targetCellArr) {
+  const survivingCellArr = targetCellArr.filter(cell => cell.age <= maxAge);
+  targetCellArr = survivingCellArr;
+}
+
+function ageCells(targetCellArr) {
+  for (let cell of targetCellArr) {
+    cell.incrementAge();
+  }
+}
+
+function multiplyCells(targetCellArr) {
+  for (let cell of targetCellArr) {
+    const hasChildren = random(1) > 0.8;
+  if (cell.age === 200 && hasChildren) {
+    const currGenCount = round(random(5, 20))
+    const currMinSize = round(random(1, 5))
+    const currMaxSize = round(random(6, 9))
+    const currMaxDist = round(random(10, 40))
+    const currCenter = {
+      x: cell.x,
+      y: cell.y
+    }
+    generateCells(currGenCount, currMinSize, currMaxSize, currCenter, currMaxDist, subCells);
+  }
+  }
+  
 }
 
 
