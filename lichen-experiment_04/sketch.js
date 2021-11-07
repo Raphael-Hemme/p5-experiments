@@ -4,7 +4,7 @@ let canvasCenter = {
 }
 
 class Cell {
-  constructor(x, y, size, xSpeed, ySpeed, traveledDist, maxDist, hsla, maxAge) {
+  constructor(x, y, size, xSpeed, ySpeed, traveledDist, maxDist, hsla, maxAge, chanceToBloom) {
     this.x = x;
     this.y = y;
     this.size = size;
@@ -12,11 +12,12 @@ class Cell {
     this.ySpeed = ySpeed;
     this.traveledDist = traveledDist;
     this.maxDist = maxDist;
-    this.hsla = hsla
-    this.maxAge = maxAge
+    this.hsla = hsla;
+    this.maxAge = maxAge;
+    this.chanceToBloom = chanceToBloom;
   }
   age = 0;
-  
+  blooming = false;
 
   incrementAge() {
     this.age++;
@@ -27,6 +28,7 @@ class Cell {
     }
   }
   bloom() {
+    this.blooming = true;
     this.hsla.h = 19;
     this.hsla.s = round(random(40, 70))
   }
@@ -57,18 +59,19 @@ function draw() {
   const mainCellMaxAge = round(random(300, 500));
   generateCells(currGenCount, minSize, maxSize, canvasCenter, maxDist, cells, mainCellMaxAge);
 
-  moveCells(cells);
+  drawCells(cells);
   ageCells(cells);
   multiplyCells(cells)
   killCells(cells);
   if (subCells.length > 0) {
-    moveCells(subCells);
+    drawCells(subCells);
     ageCells(subCells);
+    setRandomCellsToHaveBloomShape(subCells)
     killCells(subCells);
   }
 }
 
-function moveCells(targetCellArr) {
+function drawCells(targetCellArr) {
   for(let cell of targetCellArr){
     let oldX = cell.x;
     let oldY = cell.y;
@@ -84,8 +87,14 @@ function moveCells(targetCellArr) {
     }
 
     let c = color(`hsla(${cell.hsla.h}, ${cell.hsla.s}%, ${cell.hsla.l}%, ${cell.hsla.a})`);
-    fill(c)
-    noStroke()
+    if (!cell.blooming) {
+      noStroke();
+      fill(c);
+    } else {
+      noFill()
+      strokeWeight(2);
+      stroke(c);
+    }
     ellipse(cell.x, cell.y, cell.size, cell.size);
   }
 }
@@ -105,10 +114,20 @@ function generateCells(amount, minSize, maxSize, center, maxDist, targetCellArr,
     const maxTravelDist = round(random(maxDist / 2, maxDist))
     const traveledDist = 0;
     const size = random(minSize, maxSize);
+    const chanceToBloom = random(1) > 0.95;
 
     const hsla = {h: 40, s: random(30, 90), l: 40, a: 1.0};
 
-    targetCellArr.push(new Cell(x, y, size, xSpeed, ySpeed, traveledDist, maxTravelDist, hsla, maxAge))
+    targetCellArr.push(new Cell(x, y, size, xSpeed, ySpeed, traveledDist, maxTravelDist, hsla, maxAge, chanceToBloom))
+  }
+}
+
+// Not for generating new cells (rename later) just visual
+function setRandomCellsToHaveBloomShape(targetCellArr) {
+  for (let cell of targetCellArr) {
+    if (cell.xSpeed === 0 && cell.chanceToBloom) {
+      cell.bloom();
+    } 
   }
 }
 
@@ -120,7 +139,6 @@ function killCells(targetCellArr) {
   for (let el of survivingCellArr) {
     targetCellArr.push(el);
   }
-
 }
 
 function ageCells(targetCellArr) {
