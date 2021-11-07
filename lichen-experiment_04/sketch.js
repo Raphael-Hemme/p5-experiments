@@ -3,10 +3,8 @@ let canvasCenter = {
   y: 0
 }
 
-maxAge = 300
-
 class Cell {
-  constructor(x, y, size, xSpeed, ySpeed, traveledDist, maxDist, hsl) {
+  constructor(x, y, size, xSpeed, ySpeed, traveledDist, maxDist, hsla, maxAge) {
     this.x = x;
     this.y = y;
     this.size = size;
@@ -14,11 +12,23 @@ class Cell {
     this.ySpeed = ySpeed;
     this.traveledDist = traveledDist;
     this.maxDist = maxDist;
-    this.hsl = hsl
+    this.hsla = hsla
+    this.maxAge = maxAge
   }
   age = 0;
-  incrementAge () {
+  
+
+  incrementAge() {
     this.age++;
+  }
+  fade() {
+    if ((this.maxAge - this.age < 50) && this.hsla.a > 0.05) {
+      this.hsla.a -= 0.02;
+    }
+  }
+  bloom() {
+    this.hsla.h = 19;
+    this.hsla.s = round(random(40, 70))
   }
 }
 
@@ -29,7 +39,7 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   canvasCenter.x = width / 2;
   canvasCenter.y = height /2;
-  frameRate(30);
+  frameRate(20);
 }
 
 function draw() {
@@ -40,11 +50,12 @@ function draw() {
     console.log('subCells length: ', subCells.length)
   }
 
-  let currGenCount = round(random(2, 10))
-  let minSize = round(random(2, 5))
-  let maxSize = round(random(6, 15))
-  let maxDist = round(random(10, 300))
-  generateCells(currGenCount, minSize, maxSize, canvasCenter, maxDist, cells);
+  const currGenCount = round(random(3, 25))
+  const minSize = 2
+  const maxSize = 15
+  const maxDist = round(random(10, 300))
+  const mainCellMaxAge = round(random(300, 500));
+  generateCells(currGenCount, minSize, maxSize, canvasCenter, maxDist, cells, mainCellMaxAge);
 
   moveCells(cells);
   ageCells(cells);
@@ -72,14 +83,14 @@ function moveCells(targetCellArr) {
       cell.ySpeed = 0;
     }
 
-    let c = color(`hsl(${cell.hsl.h}, ${cell.hsl.s}%, ${cell.hsl.l}%)`);
+    let c = color(`hsla(${cell.hsla.h}, ${cell.hsla.s}%, ${cell.hsla.l}%, ${cell.hsla.a})`);
     fill(c)
     noStroke()
     ellipse(cell.x, cell.y, cell.size, cell.size);
   }
 }
 
-function generateCells(amount, minSize, maxSize, center, maxDist, targetCellArr) {
+function generateCells(amount, minSize, maxSize, center, maxDist, targetCellArr, maxAge) {
   for(let i = 0; i < amount; i++) {
 
     const x = center.x // width / 2; 
@@ -88,40 +99,55 @@ function generateCells(amount, minSize, maxSize, center, maxDist, targetCellArr)
     const xSpeed = random(-5, 5);
     const ySpeed = random(-5, 5);
 
+/*     const xSpeed = random(-1, 1);
+    const ySpeed = random(-1, 1); */
+
+    const maxTravelDist = round(random(maxDist / 2, maxDist))
     const traveledDist = 0;
     const size = random(minSize, maxSize);
 
-    const hsl = {h: 40, s: random(30, 90), l: 40};
+    const hsla = {h: 40, s: random(30, 90), l: 40, a: 1.0};
 
-    targetCellArr.push(new Cell(x, y, size, xSpeed, ySpeed, traveledDist, maxDist, hsl))
+    targetCellArr.push(new Cell(x, y, size, xSpeed, ySpeed, traveledDist, maxTravelDist, hsla, maxAge))
   }
 }
 
 function killCells(targetCellArr) {
-  const survivingCellArr = targetCellArr.filter(cell => cell.age <= maxAge);
-  targetCellArr = survivingCellArr;
+  const survivingCellArr = targetCellArr.filter(cell => cell.age < cell.maxAge);
+  while (targetCellArr.length > 0) {
+    targetCellArr.pop();
+  }
+  for (let el of survivingCellArr) {
+    targetCellArr.push(el);
+  }
+
 }
 
 function ageCells(targetCellArr) {
   for (let cell of targetCellArr) {
     cell.incrementAge();
+    if (cell.age > cell.maxAge / 2) {
+      cell.fade();
+    }
   }
 }
 
 function multiplyCells(targetCellArr) {
   for (let cell of targetCellArr) {
-    const hasChildren = random(1) > 0.8;
-  if (cell.age === 200 && hasChildren) {
-    const currGenCount = round(random(5, 20))
-    const currMinSize = round(random(1, 5))
-    const currMaxSize = round(random(6, 9))
-    const currMaxDist = round(random(10, 40))
-    const currCenter = {
-      x: cell.x,
-      y: cell.y
+    const hasChildren = random(1) > 0.7 && subCells.length < 6000;
+    if ((cell.xSpeed === 0 && cell.age > 170) && hasChildren) {
+      cell.bloom()
+      const currGenCount = round(random(5, 15))
+      const currMinSize = 2
+      const currMaxSize = 15
+      const currMaxDist = round(random(10, 50))
+      const currCenter = {
+        x: cell.x,
+        y: cell.y
+      }
+      const descendentMaxAge = round(random(100, 200))
+      generateCells(currGenCount, currMinSize, currMaxSize, currCenter, currMaxDist, subCells, descendentMaxAge);
     }
-    generateCells(currGenCount, currMinSize, currMaxSize, currCenter, currMaxDist, subCells);
-  }
   }
   
 }
