@@ -28,7 +28,7 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   canvasCenter.x = width / 2;
   canvasCenter.y = height /2;
-  colorMode('HSL');
+  // colorMode('HSL');
 
   for (let i = 10; i > 0; i--) {
     const amount = random(i * 10, i * 20);
@@ -49,7 +49,7 @@ function draw() {
     // cells[i].forEach(cell => cell.incrementAge())
   }
 
-  if (frameCount % 600 === 0) {
+  if (frameCount % 120 === 0) {
     cells.pop();
     counter < 10 ? counter++ : counter = 0
     dynamicMaxDistDecrementor = counter * 30;
@@ -80,7 +80,6 @@ function draw() {
 
 }
 
-
 function generateCellGeneration(amount, minSize, maxSize, center) {
   const pulseGeneration = generateCells(amount, minSize, maxSize, center, globalMaxDistDecrementor);
   globalMaxDistDecrementor -= 30;
@@ -102,7 +101,8 @@ function moveCells(cellArr) {
       cell.ySpeed = 0;
     }
 
-    fill(cell.hsl.h, cell.hsl.s, cell.hsl.l)
+    let c = color(`hsl(${cell.hsl.h}, ${cell.hsl.s}%, ${cell.hsl.l}%)`);
+    fill(c)
     noStroke()
     ellipse(cell.x, cell.y, cell.size, cell.size);
   }
