@@ -4,7 +4,7 @@ let canvasCenter = {
 }
 
 class Cell {
-  constructor(x, y, size, xSpeed, ySpeed, traveledDist, maxDist, hsla, maxAge, chanceToBloom) {
+  constructor(x, y, size, xSpeed, ySpeed, traveledDist, maxDist, hsla, maxAge) {
     this.x = x;
     this.y = y;
     this.size = size;
@@ -14,10 +14,11 @@ class Cell {
     this.maxDist = maxDist;
     this.hsla = hsla;
     this.maxAge = maxAge;
-    this.chanceToBloom = chanceToBloom;
   }
   age = 0;
   blooming = false;
+  canBloom = Math.random() > 0.8;
+  canReproduce = Math.random() > 0.8;
 
   incrementAge() {
     this.age++;
@@ -114,18 +115,17 @@ function generateCells(amount, minSize, maxSize, center, maxDist, targetCellArr,
     const maxTravelDist = round(random(maxDist / 2, maxDist))
     const traveledDist = 0;
     const size = random(minSize, maxSize);
-    const chanceToBloom = random(1) > 0.95;
 
     const hsla = {h: 40, s: random(30, 90), l: 40, a: 1.0};
 
-    targetCellArr.push(new Cell(x, y, size, xSpeed, ySpeed, traveledDist, maxTravelDist, hsla, maxAge, chanceToBloom))
+    targetCellArr.push(new Cell(x, y, size, xSpeed, ySpeed, traveledDist, maxTravelDist, hsla, maxAge))
   }
 }
 
 // Not for generating new cells (rename later) just visual
 function setRandomCellsToHaveBloomShape(targetCellArr) {
   for (let cell of targetCellArr) {
-    if (cell.xSpeed === 0 && cell.chanceToBloom) {
+    if (cell.xSpeed === 0 && cell.canBloom) {
       cell.bloom();
     } 
   }
@@ -152,8 +152,7 @@ function ageCells(targetCellArr) {
 
 function multiplyCells(targetCellArr) {
   for (let cell of targetCellArr) {
-    const hasChildren = random(1) > 0.7 && subCells.length < 6000;
-    if ((cell.xSpeed === 0 && cell.age > 170) && hasChildren) {
+    if ((cell.xSpeed === 0 && cell.age > 170) && cell.canReproduce && subCells.length < 6000) {
       cell.bloom()
       const currGenCount = round(random(5, 15))
       const currMinSize = 2
