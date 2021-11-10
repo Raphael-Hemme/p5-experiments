@@ -2,9 +2,10 @@ let canvasCenter = {
   x: 0,
   y: 0
 }
+const distLimit = 400
 
 class Cell {
-  constructor(x, y, size, xSpeed, ySpeed, traveledDist, maxDist, hsla, maxAge) {
+  constructor(x, y, size, xSpeed, ySpeed, traveledDist, maxDist, originalMaxDistForColorMap, hsla, maxAge) {
     this.x = x;
     this.y = y;
     this.size = size;
@@ -12,6 +13,7 @@ class Cell {
     this.ySpeed = ySpeed;
     this.traveledDist = traveledDist;
     this.maxDist = maxDist;
+    this.originalMaxDistForColorMap = originalMaxDistForColorMap;
     this.hsla = hsla;
     this.maxAge = maxAge;
   }
@@ -19,7 +21,7 @@ class Cell {
   blooming = false;
   canBloom = Math.random() > 0.8;
   canReproduce = Math.random() > 0.8;
-
+  
   incrementAge() {
     this.age++;
   }
@@ -32,6 +34,10 @@ class Cell {
     this.blooming = true;
     this.hsla.h = 19;
     this.hsla.s = round(random(40, 70))
+  }
+  changeSaturation() {
+    this.hsla.s = map(this.traveledDist, 0, this.originalMaxDistForColorMap, 30, 90)
+    
   }
 }
 
@@ -56,7 +62,7 @@ function draw() {
   const currGenCount = round(random(3, 25))
   const minSize = 2
   const maxSize = 15
-  const maxDist = round(random(10, 300))
+  const maxDist = round(random(10, distLimit))
   const mainCellMaxAge = round(random(300, 500));
   generateCells(currGenCount, minSize, maxSize, canvasCenter, maxDist, cells, mainCellMaxAge);
 
@@ -116,9 +122,25 @@ function generateCells(amount, minSize, maxSize, center, maxDist, targetCellArr,
     const traveledDist = 0;
     const size = random(minSize, maxSize);
 
-    const hsla = {h: 40, s: random(30, 90), l: 40, a: 1.0};
+    const hsla = {
+      h: 40,
+      s: 90, // random(30, 90),
+      l: 40,
+      a: 1.0
+    };
 
-    targetCellArr.push(new Cell(x, y, size, xSpeed, ySpeed, traveledDist, maxTravelDist, hsla, maxAge))
+    targetCellArr.push(new Cell(
+      x,
+      y,
+      size,
+      xSpeed,
+      ySpeed,
+      traveledDist,
+      maxTravelDist,
+      maxDist,
+      hsla,
+      maxAge
+    ))
   }
 }
 
@@ -133,9 +155,7 @@ function setRandomCellsToHaveBloomShape(targetCellArr) {
 
 function killCells(targetCellArr) {
   const survivingCellArr = targetCellArr.filter(cell => cell.age < cell.maxAge);
-  while (targetCellArr.length > 0) {
-    targetCellArr.pop();
-  }
+  targetCellArr.splice(0, targetCellArr.length);
   for (let el of survivingCellArr) {
     targetCellArr.push(el);
   }
@@ -144,6 +164,7 @@ function killCells(targetCellArr) {
 function ageCells(targetCellArr) {
   for (let cell of targetCellArr) {
     cell.incrementAge();
+    cell.changeSaturation();
     if (cell.age > cell.maxAge / 2) {
       cell.fade();
     }
@@ -152,18 +173,30 @@ function ageCells(targetCellArr) {
 
 function multiplyCells(targetCellArr) {
   for (let cell of targetCellArr) {
-    if ((cell.xSpeed === 0 && cell.age > 170) && cell.canReproduce && subCells.length < 6000) {
-      cell.bloom()
-      const currGenCount = round(random(5, 15))
-      const currMinSize = 2
-      const currMaxSize = 15
-      const currMaxDist = round(random(10, 50))
-      const currCenter = {
-        x: cell.x,
-        y: cell.y
+    if (cell.xSpeed === 0 
+      && cell.age > 170 
+      && cell.canReproduce 
+      && subCells.length < 6000) {
+        cell.bloom()
+        cell.canReproduce = false;
+        const currGenCount = round(random(20, 40))
+        const currMinSize = 2
+        const currMaxSize = 15
+        const currMaxDist = round(random(10, 50))
+        const currCenter = {
+          x: cell.x,
+          y: cell.y
       }
       const descendentMaxAge = round(random(100, 200))
-      generateCells(currGenCount, currMinSize, currMaxSize, currCenter, currMaxDist, subCells, descendentMaxAge);
+      generateCells(
+        currGenCount,
+        currMinSize,
+        currMaxSize,
+        currCenter,
+        currMaxDist,
+        subCells,
+        descendentMaxAge
+      );
     }
   }
   
