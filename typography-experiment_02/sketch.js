@@ -45,9 +45,9 @@ function setup() {
 }
 
 function draw() {
-    push();
+/*     push();
       translate(100, yOffset)
-    pop();
+    pop(); */
   drawString(ioStringArr);
 }
 
@@ -84,27 +84,50 @@ function drawChar(charPointArr) {
 };
 
 function drawString(stringArr) {
-  for (let char of stringArr) {
-    if (char === 'space') {
-      translate(100, 0);
-    } else if (char === 'return') {
-      const lengthWithoutReturn = ioStringArr.length -1
-      translate(-(lengthWithoutReturn * 100), 150);
-      // translate(-100 * (ioString.length -1), 0);
-    } else {
-      // Why does carriage return work once and the first letter 
-      // is correctly placed but after that the translate(100, 0) stops wokring?
-      translate(100, 0); 
-      drawChar(chars[char]);
+  if (stringArr.includes('return')) {
+    const preSubStringArr = stringArr.map(el => {
+      // maybe find a better solution for the substitution characters 
+      // in order to not block them. Maybe Reg-Ex...
+      if (el === 'return') {
+        return '~';
+      } else if (el === 'space') {
+        return '_';
+      } else {
+        return el;
+      }
+    })
+    const subStringArr = preSubStringArr.join('').split('~');
+    for (let i = 0; i < subStringArr.length; i++) {
+      const currYOffset = i > 0 ? 150 : 0;
+      const currXOffset = i > 0 ? -1 * (subStringArr[i - 1].length * 100) : 0;
+      translate(currXOffset, currYOffset);
+      for (let char of subStringArr[i]) {
+        if (char === '_') {
+          translate(100, 0);
+        } else {
+          translate(100, 0); 
+          drawChar(chars[char]);
+        }
+      }
+    }
+  } else {
+    for (let char of stringArr) {
+      if (char === 'space') {
+        translate(100, 0);
+      } else {
+        translate(100, 0); 
+        drawChar(chars[char]);
+      }
     }
   }
+  
 };
 
 function keyTyped() {
   if (key === ' ') {
     ioStringArr.push('space')
   } else if (key === 'Enter') {
-    ioStringArr.push('return')
+    ioStringArr.push('return');
   } else {
     const currKey = key;
     currKey.toLowerCase();
