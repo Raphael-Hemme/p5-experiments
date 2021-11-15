@@ -29,15 +29,15 @@ const chars = {
   return: 'return'
 }
 
-let ioString = [];
+let ioStringArr = [];
 
 let yOffset = 100;
+let counter = 0;
 
 function setup() {
   generateAlphabet();
   createCanvas(windowWidth, windowHeight);
   background(50);
-  translate(0, yOffset)
   frameRate(60);
 
   fill(237, 34, 93);
@@ -45,7 +45,10 @@ function setup() {
 }
 
 function draw() {
-  drawString(ioString);
+    push();
+      translate(100, yOffset)
+    pop();
+  drawString(ioStringArr);
 }
 
 function generateLetter() {
@@ -72,7 +75,6 @@ function generateAlphabet() {
 }
 
 function drawChar(charPointArr) {
-  translate(100, 0)
   beginShape();
     for (let point of charPointArr) {
       vertex(point.x, point.y);
@@ -82,15 +84,17 @@ function drawChar(charPointArr) {
 };
 
 function drawString(stringArr) {
-  // const stringArr = string.toLowerCase().split('');
   for (let char of stringArr) {
     if (char === 'space') {
       translate(100, 0);
     } else if (char === 'return') {
-      yOffset += 150
-      // translate(-100 * (ioString.length -1), yOffset);
+      const lengthWithoutReturn = ioStringArr.length -1
+      translate(-(lengthWithoutReturn * 100), 150);
       // translate(-100 * (ioString.length -1), 0);
     } else {
+      // Why does carriage return work once and the first letter 
+      // is correctly placed but after that the translate(100, 0) stops wokring?
+      translate(100, 0); 
       drawChar(chars[char]);
     }
   }
@@ -98,19 +102,19 @@ function drawString(stringArr) {
 
 function keyTyped() {
   if (key === ' ') {
-    ioString.push('space')
+    ioStringArr.push('space')
   } else if (key === 'Enter') {
-    ioString.push('return')
+    ioStringArr.push('return')
   } else {
     const currKey = key;
     currKey.toLowerCase();
-    ioString.push(currKey)
+    ioStringArr.push(currKey)
   }
 };
 
 function keyPressed() {
   if (keyCode === BACKSPACE) {
-    ioString.pop()
+    ioStringArr.pop()
     background(50);
   };
 };
